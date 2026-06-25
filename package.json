@@ -1,0 +1,27 @@
+{
+  "name": "infocascade-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "agent.ts",
+ "scripts": {
+  "start": "ts-node src/agent.ts"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^2.10.0",
+    "axios": "^1.18.1",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "nodemailer": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^1.0.0",
+    "@types/node": "^26.0.0",
+    "@types/nodemailer": "^8.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
