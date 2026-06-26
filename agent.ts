@@ -1,8 +1,13 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import https from "https";
 
 const BASE_URL = "https://erp.gndec.ac.in";
 const NOTICE_PAGE = `${BASE_URL}/notice`;
+
+const httpsAgent = new https.Agent({
+    family: 4,
+});
 
 export interface Notice {
     title: string;
@@ -11,28 +16,58 @@ export interface Notice {
     url: string;
 }
 
+async function fetchWithRetry(): Promise<string> {
+    let lastError: unknown;
+
+    for (let i = 1; i <= 3; i++) {
+        try {
+            const response = await axios.get(NOTICE_PAGE, {
+                httpsAgent,
+                timeout: 60000,
+                maxRedirects: 5,
+                headers: {
+                    "User-Agent":
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0.0.0 Safari/537.36",
+                    Accept: "text/html",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    Connection: "keep-alive",
+                    "Cache-Control": "no-cache",
+                },
+            });
+
+            return response.data;
+        } catch (err) {
+            lastError = err;
+
+            console.log(`Attempt ${i}/3 failed.`);
+
+            if (i < 3) {
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+            }
+        }
+    }
+
+    throw lastError;
+}
+
 export async function getLatestFive(): Promise<Notice[]> {
-    const { data } = await axios.get(NOTICE_PAGE, {
-        headers: {
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0.0.0 Safari/537.36",
-            Accept: "text/html",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-        timeout: 30000,
-    });
+    const data = await fetchWithRetry();
 
     const $ = cheerio.load(data);
+
     const notices: Notice[] = [];
 
     $("a[href^='noticeboard/']").each((_, el) => {
         if (notices.length >= 5) return false;
 
         const a = $(el);
+
         const href = a.attr("href");
+
         if (!href) return;
 
         const title = a.text().trim();
+
         const meta = a.parent().prev("p").text().trim();
 
         let author = "";
