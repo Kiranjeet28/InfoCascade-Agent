@@ -19,15 +19,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: "npm"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup npm
+        uses: npm/action-setup@v4
         with:
           version: 10
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile=false
+        run: npm install --frozen-lockfile=false
 
       - name: Run Agent
         env:
@@ -36,4 +36,4 @@ jobs:
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
-        run: pnpm start
+        run: npm start
