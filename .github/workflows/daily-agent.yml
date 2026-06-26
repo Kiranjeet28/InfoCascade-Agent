@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
-    # Runs every day at 4:00 PM IST (10:30 UTC)
+    # 4:00 PM IST = 10:30 UTC
     - cron: "30 10 * * *"
 
 jobs:
@@ -19,15 +19,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "npm"
-
-      - name: Setup npm
-        uses: npm/action-setup@v4
-        with:
-          version: 10
 
       - name: Install Dependencies
-        run: npm install --frozen-lockfile=false
+        run: npm install
 
       - name: Run Agent
         env:
