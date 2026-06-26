@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
-    # Runs every day at 4:00 PM IST (10:30 AM UTC)
+    # Runs every day at 4:00 PM IST (10:30 UTC)
     - cron: "30 10 * * *"
 
 jobs:
@@ -19,15 +19,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile=false
 
       - name: Run Agent
         env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: pnpm start
