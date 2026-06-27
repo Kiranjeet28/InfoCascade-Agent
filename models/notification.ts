@@ -5,10 +5,12 @@ const notificationSchema = new mongoose.Schema(
         title: {
             type: String,
             required: true,
+            trim: true,
         },
         author: {
             type: String,
             default: "",
+            trim: true,
         },
         date: {
             type: String,
@@ -18,6 +20,11 @@ const notificationSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
+            trim: true,
+        },
+        htmlContent: {
+            type: String,
+            required: true,
         },
     },
     {
