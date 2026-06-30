@@ -21,20 +21,24 @@ import {
 const router = Router();
 
 /**
+ * ==================================================
  * Public Routes
+ * ==================================================
  */
 
-// GET /api/notices
+// Get all notices
 router.get("/", getAllNotices);
 
-// GET /api/notices/:id
+// Get notice by id
 router.get("/:id", getNoticeById);
 
 /**
- * Admin Routes
+ * ==================================================
+ * Protected Admin Routes
+ * ==================================================
  */
 
-// POST /api/notices
+// Create notice
 router.post(
     "/",
     auth,
@@ -44,7 +48,7 @@ router.post(
     createNotice
 );
 
-// PUT /api/notices/:id
+// Update notice
 router.put(
     "/:id",
     auth,
@@ -54,7 +58,7 @@ router.put(
     updateNotice
 );
 
-// DELETE /api/notices/:id
+// Delete notice
 router.delete(
     "/:id",
     auth,
@@ -62,8 +66,7 @@ router.delete(
     deleteNotice
 );
 
-// POST /api/notices/sync
-// Runs the scraper + Gemini + MongoDB sync
+// Run notice scraper manually
 router.post(
     "/sync",
     auth,
