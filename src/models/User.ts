@@ -29,31 +29,7 @@ const userSchema = new mongoose.Schema(
             trim: true,
         },
 
-        year: {
-            type: String,
-            default: "",
-            trim: true,
-        },
-
-        urn: {
-            type: String,
-            required: true,
-            match: [/^\d{7}$/, "URN must contain exactly 7 digits"],
-        },
-
-        crn: {
-            type: String,
-            required: true,
-            match: [/^\d{7}$/, "CRN must contain exactly 7 digits"],
-        },
-
-        group: {
-            type: String,
-            default: "",
-            trim: true,
-        },
-
-        department: {
+        batch: {
             type: String,
             default: "",
             trim: true,

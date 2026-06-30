@@ -12,12 +12,8 @@ export interface CreateUserDto {
     name: string;
     email: string;
     password: string;
-    branch: string;
-    year: string;
-    urn: string;
-    crn: string;
-    group: string;
-    department: string;
+    branch?: string;
+    batch?: string;
     role?: "student" | "admin";
 }
 
@@ -26,18 +22,11 @@ export interface UpdateUserDto {
     email?: string;
     password?: string;
     branch?: string;
-    year?: string;
-    urn?: string;
-    crn?: string;
-    group?: string;
-    department?: string;
+    batch?: string;
     role?: "student" | "admin";
 }
 
 class UserService {
-    /**
-     * Get all users
-     */
     async getAll(query: UserQuery) {
         const {
             page = 1,
@@ -67,13 +56,13 @@ class UserService {
                     },
                 },
                 {
-                    urn: {
+                    branch: {
                         $regex: search,
                         $options: "i",
                     },
                 },
                 {
-                    crn: {
+                    batch: {
                         $regex: search,
                         $options: "i",
                     },
@@ -97,9 +86,6 @@ class UserService {
         };
     }
 
-    /**
-     * Get user by id
-     */
     async getById(id: string) {
         const user = await User.findById(id);
 
@@ -110,18 +96,12 @@ class UserService {
         return user;
     }
 
-    /**
-     * Get user by email
-     */
     async getByEmail(email: string) {
         return User.findOne({
             email: email.toLowerCase(),
         }).select("+password");
     }
 
-    /**
-     * Create user
-     */
     async create(data: CreateUserDto) {
         const emailExists = await User.findOne({
             email: data.email.toLowerCase(),
@@ -129,22 +109,6 @@ class UserService {
 
         if (emailExists) {
             throw new Error("Email already exists");
-        }
-
-        const urnExists = await User.findOne({
-            urn: data.urn,
-        });
-
-        if (urnExists) {
-            throw new Error("URN already exists");
-        }
-
-        const crnExists = await User.findOne({
-            crn: data.crn,
-        });
-
-        if (crnExists) {
-            throw new Error("CRN already exists");
         }
 
         const hashedPassword = await bcrypt.hash(
@@ -161,18 +125,16 @@ class UserService {
         return user;
     }
 
-    /**
-     * Update user
-     */
-    async update(
-        id: string,
-        data: UpdateUserDto
-    ) {
+    async update(id: string, data: UpdateUserDto) {
         if (data.password) {
             data.password = await bcrypt.hash(
                 data.password,
                 10
             );
+        }
+
+        if (data.email) {
+            data.email = data.email.toLowerCase();
         }
 
         const user = await User.findByIdAndUpdate(
@@ -191,9 +153,6 @@ class UserService {
         return user;
     }
 
-    /**
-     * Delete user
-     */
     async delete(id: string) {
         const user = await User.findByIdAndDelete(id);
 
@@ -207,52 +166,22 @@ class UserService {
         };
     }
 
-    /**
-     * Check email exists
-     */
     async emailExists(email: string) {
         return User.exists({
             email: email.toLowerCase(),
         });
     }
 
-    /**
-     * Check URN exists
-     */
-    async urnExists(urn: string) {
-        return User.exists({
-            urn,
-        });
-    }
-
-    /**
-     * Check CRN exists
-     */
-    async crnExists(crn: string) {
-        return User.exists({
-            crn,
-        });
-    }
-
-    /**
-     * Count users
-     */
     async count() {
         return User.countDocuments();
     }
 
-    /**
-     * Get all admins
-     */
     async getAdmins() {
         return User.find({
             role: "admin",
         });
     }
 
-    /**
-     * Get all students
-     */
     async getStudents() {
         return User.find({
             role: "student",
