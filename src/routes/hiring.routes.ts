@@ -1,51 +1,87 @@
-import { body, param } from "express-validator";
+import { Router } from "express";
+
+import {
+    createHiring,
+    getAllHiring,
+    getHiringById,
+    deleteHiring,
+    getHiringCount,
+    latestHiring,
+} from "../controllers/hiring.controller.js";
+
+import { auth } from "../middleware/auth.js";
+import { admin } from "../middleware/admin.js";
+import { validate } from "../middleware/validate.js";
+
+import {
+    createHiringValidator,
+    hiringIdValidator,
+} from "../validators/hiring.validator.js";
+
+const router = Router();
 
 /**
  * ===========================================
- * Create Hiring Validator
+ * Public Routes
  * ===========================================
  */
-export const createHiringValidator = [
-    body("fullName")
-        .trim()
-        .notEmpty()
-        .withMessage("Full name is required")
-        .isLength({ min: 3, max: 100 })
-        .withMessage("Full name must be between 3 and 100 characters"),
 
-    body("email")
-        .trim()
-        .notEmpty()
-        .withMessage("Email is required")
-        .isEmail()
-        .withMessage("Invalid email address")
-        .normalizeEmail(),
-
-    body("department")
-        .trim()
-        .notEmpty()
-        .withMessage("Department is required"),
-
-    body("batch")
-        .trim()
-        .notEmpty()
-        .withMessage("Batch is required"),
-
-    body("urn")
-        .trim()
-        .notEmpty()
-        .withMessage("URN is required")
-        .matches(/^\d{7}$/)
-        .withMessage("URN must contain exactly 7 digits"),
-];
+// Submit recruitment form
+router.post(
+    "/",
+    createHiringValidator,
+    validate,
+    createHiring
+);
 
 /**
  * ===========================================
- * Hiring ID Validator
+ * Admin Routes
  * ===========================================
  */
-export const hiringIdValidator = [
-    param("id")
-        .isMongoId()
-        .withMessage("Invalid hiring application id"),
-];
+
+// Get all applications
+router.get(
+    "/",
+    auth,
+    admin,
+    getAllHiring
+);
+
+// Latest applications
+router.get(
+    "/latest",
+    auth,
+    admin,
+    latestHiring
+);
+
+// Total applications
+router.get(
+    "/count",
+    auth,
+    admin,
+    getHiringCount
+);
+
+// Get application by id
+router.get(
+    "/:id",
+    auth,
+    admin,
+    hiringIdValidator,
+    validate,
+    getHiringById
+);
+
+// Delete application
+router.delete(
+    "/:id",
+    auth,
+    admin,
+    hiringIdValidator,
+    validate,
+    deleteHiring
+);
+
+export default router;
