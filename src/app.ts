@@ -7,9 +7,12 @@ import morgan from "morgan";
 
 import { env } from "./config/env.js";
 
-import noticeRoutes from "./routes/notice.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
-// import authRoutes from "./routes/auth.routes.js";
+import noticeRoutes from "./routes/notice.routes.js";
+import hiringRoutes from "./routes/hiring.routes.js";
+import teamRoutes from "./routes/team.routes.js";
+import feedbackRoutes from "./routes/feedback.routes.js";
 
 import { notFound } from "./middleware/notFound.js";
 import { errorMiddleware } from "./middleware/error.js";
@@ -18,7 +21,7 @@ const app = express();
 
 /**
  * ===========================================
- * Middlewares
+ * Security Middleware
  * ===========================================
  */
 
@@ -26,8 +29,10 @@ app.use(
     cors({
         origin: [
             env.WEB_ORIGIN,
+            "https://infocascade-database.onrender.com",
             "http://localhost:5173",
             "http://localhost:8080",
+            "http://localhost:3000",
         ],
         credentials: true,
     })
@@ -43,7 +48,11 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(
+    express.urlencoded({
+        extended: true,
+    })
+);
 
 /**
  * ===========================================
@@ -55,6 +64,7 @@ app.get("/", (_req, res) => {
     res.status(200).json({
         success: true,
         message: "🚀 InfoCascade Backend Running",
+        version: "1.0.0",
     });
 });
 
@@ -64,18 +74,21 @@ app.get("/", (_req, res) => {
  * ===========================================
  */
 
-// Public Notice APIs
-app.use("/api/notices", noticeRoutes);
+app.use("/api/auth", authRoutes);
 
-// User APIs
 app.use("/api/users", userRoutes);
 
-// Authentication APIs
-// app.use("/api/auth", authRoutes);
+app.use("/api/notices", noticeRoutes);
+
+app.use("/api/hiring", hiringRoutes);
+
+app.use("/api/team", teamRoutes);
+
+app.use("/api/feedback", feedbackRoutes);
 
 /**
  * ===========================================
- * 404 Handler
+ * Route Not Found
  * ===========================================
  */
 
