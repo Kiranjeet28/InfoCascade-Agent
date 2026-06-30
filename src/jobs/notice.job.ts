@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import { connectDB } from "./db.ts";
-import { getLatestFive } from "./agent.ts";
-import { sendNoticeEmail } from "./mailer.ts";
-import { Notification } from "./models/notification.ts";
-import { generateNoticePost } from "./gemini.ts";
+import { connectDB } from "../config/db.js";
+import { getLatestFive } from "../services/agent/agent.service.js";
+import { sendNoticeEmail } from "../services/mail.service.js";
+import { Notification } from "../models/Notice.js";
+import { generateNoticePost } from "../services/agent/gemini.service.js";
 
 dotenv.config();
 
