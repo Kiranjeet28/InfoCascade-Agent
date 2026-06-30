@@ -4,20 +4,27 @@ import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import { notFound } from "./middleware/notFound.js";
-import { errorMiddleware } from "./middleware/error.js";
+
 import { env } from "./config/env.js";
 
-const app = express();
-app.use(notFound);
+import { notFound } from "./middleware/notFound.js";
+import { errorMiddleware } from "./middleware/error.js";
 
-app.use(errorMiddleware);
+// Routes
+import noticeRoutes from "./routes/notice.routes.js";
+
+const app = express();
+
+/**
+ * Middlewares
+ */
+
 app.use(
     cors({
         origin: [
             env.WEB_ORIGIN,
-            "http://localhost:8080",
             "http://localhost:5173",
+            "http://localhost:8080",
         ],
         credentials: true,
     })
@@ -35,20 +42,32 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+/**
+ * Health Check
+ */
+
 app.get("/", (_, res) => {
-    res.json({
+    res.status(200).json({
         success: true,
-        message: "InfoCascade Backend Running 🚀",
-    });
-});
-app.get("/", (_, res) => {
-    res.json({
-        success: true,
-        message: "InfoCascade Backend Running 🚀",
+        message: "🚀 InfoCascade Backend Running",
     });
 });
 
+/**
+ * API Routes
+ */
+
+app.use("/api/notices", noticeRoutes);
+
+/**
+ * 404 Middleware
+ */
+
 app.use(notFound);
+
+/**
+ * Global Error Middleware
+ */
 
 app.use(errorMiddleware);
 
