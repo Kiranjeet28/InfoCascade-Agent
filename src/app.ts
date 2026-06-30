@@ -8,11 +8,8 @@ import morgan from "morgan";
 import { env } from "./config/env.js";
 
 import noticeRoutes from "./routes/notice.routes.js";
+import userRoutes from "./routes/user.routes.js";
 // import authRoutes from "./routes/auth.routes.js";
-// import userRoutes from "./routes/user.routes.js";
-// import teamRoutes from "./routes/team.routes.js";
-// import hiringRoutes from "./routes/hiring.routes.js";
-// import feedbackRoutes from "./routes/feedback.routes.js";
 
 import { notFound } from "./middleware/notFound.js";
 import { errorMiddleware } from "./middleware/error.js";
@@ -20,7 +17,9 @@ import { errorMiddleware } from "./middleware/error.js";
 const app = express();
 
 /**
+ * ===========================================
  * Middlewares
+ * ===========================================
  */
 
 app.use(
@@ -47,7 +46,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /**
- * Health Route
+ * ===========================================
+ * Health Check
+ * ===========================================
  */
 
 app.get("/", (_req, res) => {
@@ -58,25 +59,32 @@ app.get("/", (_req, res) => {
 });
 
 /**
+ * ===========================================
  * API Routes
+ * ===========================================
  */
 
+// Public Notice APIs
 app.use("/api/notices", noticeRoutes);
 
+// User APIs
+app.use("/api/users", userRoutes);
+
+// Authentication APIs
 // app.use("/api/auth", authRoutes);
-// app.use("/api/users", userRoutes);
-// app.use("/api/team", teamRoutes);
-// app.use("/api/hiring", hiringRoutes);
-// app.use("/api/feedback", feedbackRoutes);
 
 /**
- * 404
+ * ===========================================
+ * 404 Handler
+ * ===========================================
  */
 
 app.use(notFound);
 
 /**
+ * ===========================================
  * Global Error Handler
+ * ===========================================
  */
 
 app.use(errorMiddleware);

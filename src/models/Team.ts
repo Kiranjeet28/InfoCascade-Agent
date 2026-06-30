@@ -31,12 +31,6 @@ const teamSchema = new mongoose.Schema(
             default: "",
             trim: true,
         },
-
-        isAdmin: {
-            type: Boolean,
-            default: false,
-        },
-
         linkedin: {
             type: String,
             default: null,
