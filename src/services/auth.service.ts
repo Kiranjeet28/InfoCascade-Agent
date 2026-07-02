@@ -8,12 +8,8 @@ export interface RegisterDto {
     name: string;
     email: string;
     password: string;
-    branch: string;
-    year: string;
-    urn: string;
-    crn: string;
-    group: string;
-    department: string;
+    branch?: string;
+    batch?: string;
 }
 
 export interface LoginDto {
@@ -23,7 +19,9 @@ export interface LoginDto {
 
 class AuthService {
     /**
-     * Register User
+     * =====================================================
+     * Register
+     * =====================================================
      */
     async register(data: RegisterDto) {
         const emailExists = await User.findOne({
@@ -34,31 +32,17 @@ class AuthService {
             throw new Error("Email already exists");
         }
 
-        const urnExists = await User.findOne({
-            urn: data.urn,
-        });
-
-        if (urnExists) {
-            throw new Error("URN already exists");
-        }
-
-        const crnExists = await User.findOne({
-            crn: data.crn,
-        });
-
-        if (crnExists) {
-            throw new Error("CRN already exists");
-        }
-
         const hashedPassword = await bcrypt.hash(
             data.password,
             10
         );
 
         const user = await User.create({
-            ...data,
+            name: data.name,
             email: data.email.toLowerCase(),
             password: hashedPassword,
+            branch: data.branch ?? "",
+            batch: data.batch ?? "",
             role: "student",
         });
 
@@ -74,13 +58,15 @@ class AuthService {
         );
 
         return {
-            user,
+            user: user.toJSON(),
             token,
         };
     }
 
     /**
+     * =====================================================
      * Login
+     * =====================================================
      */
     async login(data: LoginDto) {
         const user = await User.findOne({
@@ -120,7 +106,9 @@ class AuthService {
     }
 
     /**
+     * =====================================================
      * Current User
+     * =====================================================
      */
     async me(id: string) {
         const user = await User.findById(id);
@@ -133,7 +121,9 @@ class AuthService {
     }
 
     /**
+     * =====================================================
      * Change Password
+     * =====================================================
      */
     async changePassword(
         id: string,
@@ -169,7 +159,9 @@ class AuthService {
     }
 
     /**
+     * =====================================================
      * Logout
+     * =====================================================
      */
     async logout() {
         return {
