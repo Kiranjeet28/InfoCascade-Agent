@@ -27,6 +27,11 @@ export interface UpdateUserDto {
 }
 
 class UserService {
+    /**
+     * ===========================================
+     * Get All Users
+     * ===========================================
+     */
     async getAll(query: UserQuery) {
         const {
             page = 1,
@@ -86,6 +91,11 @@ class UserService {
         };
     }
 
+    /**
+     * ===========================================
+     * Get User By ID
+     * ===========================================
+     */
     async getById(id: string) {
         const user = await User.findById(id);
 
@@ -96,12 +106,22 @@ class UserService {
         return user;
     }
 
+    /**
+     * ===========================================
+     * Get User By Email
+     * ===========================================
+     */
     async getByEmail(email: string) {
         return User.findOne({
             email: email.toLowerCase(),
         }).select("+password");
     }
 
+    /**
+     * ===========================================
+     * Create User
+     * ===========================================
+     */
     async create(data: CreateUserDto) {
         const emailExists = await User.findOne({
             email: data.email.toLowerCase(),
@@ -117,24 +137,48 @@ class UserService {
         );
 
         const user = await User.create({
-            ...data,
+            name: data.name,
             email: data.email.toLowerCase(),
             password: hashedPassword,
+            branch: data.branch ?? "",
+            batch: data.batch ?? "",
+            role: data.role ?? "student",
         });
 
         return user;
     }
 
-    async update(id: string, data: UpdateUserDto) {
+    /**
+     * ===========================================
+     * Update User
+     * ===========================================
+     */
+    async update(
+        id: string,
+        data: UpdateUserDto
+    ) {
+        if (data.email) {
+            data.email = data.email.toLowerCase();
+
+            const emailExists = await User.findOne({
+                email: data.email,
+                _id: {
+                    $ne: id,
+                },
+            });
+
+            if (emailExists) {
+                throw new Error(
+                    "Email already exists"
+                );
+            }
+        }
+
         if (data.password) {
             data.password = await bcrypt.hash(
                 data.password,
                 10
             );
-        }
-
-        if (data.email) {
-            data.email = data.email.toLowerCase();
         }
 
         const user = await User.findByIdAndUpdate(
@@ -153,8 +197,15 @@ class UserService {
         return user;
     }
 
+    /**
+     * ===========================================
+     * Delete User
+     * ===========================================
+     */
     async delete(id: string) {
-        const user = await User.findByIdAndDelete(id);
+        const user = await User.findByIdAndDelete(
+            id
+        );
 
         if (!user) {
             throw new Error("User not found");
@@ -166,26 +217,77 @@ class UserService {
         };
     }
 
+    /**
+     * ===========================================
+     * Email Exists
+     * ===========================================
+     */
     async emailExists(email: string) {
         return User.exists({
             email: email.toLowerCase(),
         });
     }
 
+    /**
+     * ===========================================
+     * Total Users
+     * ===========================================
+     */
     async count() {
         return User.countDocuments();
     }
 
+    /**
+     * ===========================================
+     * Get Admins
+     * ===========================================
+     */
     async getAdmins() {
         return User.find({
             role: "admin",
+        }).sort({
+            createdAt: -1,
         });
     }
 
+    /**
+     * ===========================================
+     * Get Students
+     * ===========================================
+     */
     async getStudents() {
         return User.find({
             role: "student",
+        }).sort({
+            createdAt: -1,
         });
+    }
+
+    /**
+     * ===========================================
+     * Update User Role
+     * ===========================================
+     */
+    async updateRole(
+        id: string,
+        role: "student" | "admin"
+    ) {
+        const user = await User.findByIdAndUpdate(
+            id,
+            {
+                role,
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        return user;
     }
 }
 

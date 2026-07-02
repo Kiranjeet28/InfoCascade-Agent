@@ -5,6 +5,7 @@ import {
     getUserById,
     createUser,
     updateUser,
+    updateUserRole,
     deleteUser,
     getAdmins,
     getStudents,
@@ -90,5 +91,10 @@ router.delete(
     admin,
     deleteUser
 );
-
+router.patch(
+    "/:id/role",
+    auth,
+    admin,
+    updateUserRole
+);
 export default router;

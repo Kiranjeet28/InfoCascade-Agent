@@ -35,11 +35,6 @@ export const createUserValidator = [
     body("batch")
         .optional()
         .trim(),
-
-    body("role")
-        .optional()
-        .isIn(["student", "admin"])
-        .withMessage("Role must be either student or admin"),
 ];
 
 export const updateUserValidator = [
