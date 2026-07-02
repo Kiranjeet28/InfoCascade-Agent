@@ -29,6 +29,7 @@ app.use(
     cors({
         origin: [
             env.WEB_ORIGIN,
+            "https://id-preview--73d7b532-7c53-4f27-9f64-d77a10573a09.lovable.app/",
             "https://infocascade-database.onrender.com",
             "http://localhost:5173",
             "http://localhost:8080",
