@@ -1,7 +1,8 @@
-name: Notice Sync
+name: InfoCascade Notice Sync
 
 on:
   schedule:
+    # Every day at 4:00 PM IST (10:30 UTC)
     - cron: "30 10 * * *"
 
   workflow_dispatch:
@@ -11,21 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
-      - run: pnpm install
+      - name: Install Dependencies
+        run: npm install
 
-      - run: pnpm notice:sync
-
+      - name: Run Notice Agent
+        run: npm run agent
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}

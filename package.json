@@ -7,6 +7,8 @@
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc",
+    "agent": "tsx src/jobs/notice.job.ts",
+    "scrape": "tsx src/jobs/notice.job.ts",
     "notice:sync": "tsx src/jobs/notice.job.ts"
   },
   "keywords": [],
