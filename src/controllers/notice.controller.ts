@@ -77,9 +77,7 @@ export const getNoticeById: RequestHandler<
  */
 export const createNotice: RequestHandler =
     asyncHandler(async (req, res) => {
-        const notice = await NoticeService.create(
-            req.body
-        );
+        const notice = await NoticeService.create(req.body);
 
         res.status(201).json({
             success: true,
@@ -134,11 +132,9 @@ export const latestNotices: RequestHandler<
     any,
     NoticeQuery
 > = asyncHandler(async (req, res) => {
-    const limit =
-        Number(req.query.limit) || 5;
+    const limit = Number(req.query.limit) || 5;
 
-    const notices =
-        await NoticeService.latest(limit);
+    const notices = await NoticeService.latest(limit);
 
     const formatted = notices.map((n: any) => ({
         ...n.toObject(),
@@ -147,8 +143,7 @@ export const latestNotices: RequestHandler<
 
     res.status(200).json({
         success: true,
-        message:
-            "Latest notices fetched successfully.",
+        message: "Latest notices fetched successfully.",
         data: formatted,
     });
 });
@@ -160,8 +155,7 @@ export const latestNotices: RequestHandler<
  */
 export const noticeCount: RequestHandler =
     asyncHandler(async (_req, res) => {
-        const total =
-            await NoticeService.count();
+        const total = await NoticeService.count();
 
         res.status(200).json({
             success: true,
@@ -174,18 +168,20 @@ export const noticeCount: RequestHandler =
 /**
  * =====================================================
  * POST /api/notices/sync
- * Executes Scraper → Gemini → MongoDB → Email
+ * Runs the complete AI Notice Agent
  * =====================================================
  */
 export const syncNotices: RequestHandler =
     asyncHandler(async (_req, res) => {
-        const result =
-            await runNoticeJob();
+        console.log("🚀 Starting Notice Sync...");
+
+        const result = await runNoticeJob();
+
+        console.log("✅ Notice Sync Completed");
 
         res.status(200).json({
             success: true,
-            message:
-                "Notice synchronization completed successfully.",
+            message: "Notice synchronization completed successfully.",
             data: result,
         });
     });

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import { connectDB } from "../config/db.js";
 import { getLatestFive } from "../services/agent/agent.service.js";
 import { sendNoticeEmail } from "../services/mail.service.js";
@@ -18,48 +19,53 @@ interface ProcessedNotice {
 /**
  * =====================================================
  * Notice Sync Job
- * Can be called from:
- * 1. API (/api/notices/sync)
- * 2. Terminal (pnpm agent)
- * 3. GitHub Actions
  * =====================================================
  */
 export async function runNoticeJob() {
     try {
-        await connectDB();
+        // Connect only if not already connected
+        if (mongoose.connection.readyState === 0) {
+            console.log("🔌 Connecting to MongoDB...");
+            await connectDB();
+        }
 
         console.log("📥 Fetching latest notices...");
 
         const notices = await getLatestFive();
 
         if (notices.length === 0) {
-            console.log("No notices found.");
+            console.log("⚠ No notices found.");
 
             return {
                 success: true,
                 message: "No notices found.",
                 inserted: 0,
+                notices: [],
             };
         }
 
         const newNotices: ProcessedNotice[] = [];
 
         for (const notice of notices) {
+            console.log(`🔍 Checking: ${notice.title}`);
+
             const exists = await Notification.findOne({
                 url: notice.url,
             });
 
             if (exists) {
-                console.log(`⏭ Already exists: ${notice.title}`);
+                console.log(`⏭ Already Exists: ${notice.title}`);
                 continue;
             }
 
-            console.log(`✨ Generating AI content: ${notice.title}`);
+            console.log(`🤖 Generating AI Content...`);
 
             const htmlContent = await generateNoticePost({
                 ...notice,
                 content: notice.title,
             });
+
+            console.log(`💾 Saving Notice...`);
 
             await Notification.create({
                 title: notice.title,
@@ -77,41 +83,56 @@ export async function runNoticeJob() {
                 htmlContent,
             });
 
-            console.log(`✅ Stored: ${notice.title}`);
+            console.log(`✅ Saved: ${notice.title}`);
         }
 
         if (newNotices.length > 0) {
             console.log(
-                `📧 Sending ${newNotices.length} new notices...`
+                `📧 Sending ${newNotices.length} Email Notifications...`
             );
 
             await sendNoticeEmail(newNotices);
         }
 
-        console.log("✅ Notice Sync Completed.");
+        console.log("🎉 Notice Sync Completed.");
 
         return {
             success: true,
+            message: `${newNotices.length} new notice(s) synchronized.`,
             inserted: newNotices.length,
             notices: newNotices,
         };
     } catch (error) {
-        console.error("❌ Notice Sync Failed:", error);
+        console.error("❌ Notice Sync Failed");
+        console.error(error);
+
         throw error;
     }
 }
 
 /**
  * =====================================================
- * Run directly from terminal
+ * Run From Terminal
  * =====================================================
  */
+
 const isDirectRun =
-    process.argv[1] &&
-    process.argv[1].includes("notice.job");
+    process.argv[1]?.includes("notice.job");
 
 if (isDirectRun) {
     runNoticeJob()
-        .then(() => process.exit(0))
-        .catch(() => process.exit(1));
+        .then(async () => {
+            if (mongoose.connection.readyState !== 0) {
+                await mongoose.disconnect();
+            }
+
+            process.exit(0);
+        })
+        .catch(async () => {
+            if (mongoose.connection.readyState !== 0) {
+                await mongoose.disconnect();
+            }
+
+            process.exit(1);
+        });
 }
