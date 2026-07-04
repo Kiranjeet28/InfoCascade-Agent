@@ -7,6 +7,8 @@ import {
     updateNotice,
     deleteNotice,
     syncNotices,
+    latestNotices,
+    noticeCount,
 } from "../controllers/notice.controller.js";
 
 import { auth } from "../middleware/auth.js";
@@ -26,19 +28,25 @@ const router = Router();
  * ==================================================
  */
 
-// Get all notices
+// GET /api/notices
 router.get("/", getAllNotices);
 
-// Get notice by id
+// GET /api/notices/latest?limit=5
+router.get("/latest", latestNotices);
+
+// GET /api/notices/count
+router.get("/count", noticeCount);
+
+// GET /api/notices/:id
 router.get("/:id", getNoticeById);
 
 /**
  * ==================================================
- * Protected Admin Routes
+ * Admin Routes
  * ==================================================
  */
 
-// Create notice
+// POST /api/notices
 router.post(
     "/",
     auth,
@@ -48,7 +56,7 @@ router.post(
     createNotice
 );
 
-// Update notice
+// PUT /api/notices/:id
 router.put(
     "/:id",
     auth,
@@ -58,7 +66,7 @@ router.put(
     updateNotice
 );
 
-// Delete notice
+// DELETE /api/notices/:id
 router.delete(
     "/:id",
     auth,
@@ -66,7 +74,8 @@ router.delete(
     deleteNotice
 );
 
-// Run notice scraper manually
+// POST /api/notices/sync
+// Runs Scraper → Gemini → MongoDB → Email
 router.post(
     "/sync",
     auth,

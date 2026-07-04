@@ -15,7 +15,16 @@ interface ProcessedNotice {
     htmlContent: string;
 }
 
-async function main() {
+/**
+ * =====================================================
+ * Notice Sync Job
+ * Can be called from:
+ * 1. API (/api/notices/sync)
+ * 2. Terminal (pnpm agent)
+ * 3. GitHub Actions
+ * =====================================================
+ */
+export async function runNoticeJob() {
     try {
         await connectDB();
 
@@ -25,31 +34,33 @@ async function main() {
 
         if (notices.length === 0) {
             console.log("No notices found.");
-            return;
+
+            return {
+                success: true,
+                message: "No notices found.",
+                inserted: 0,
+            };
         }
 
         const newNotices: ProcessedNotice[] = [];
 
         for (const notice of notices) {
-            // Check if already stored
             const exists = await Notification.findOne({
                 url: notice.url,
             });
 
             if (exists) {
-                console.log(`⏭ Already exists: ${ notice.title } `);
+                console.log(`⏭ Already exists: ${notice.title}`);
                 continue;
             }
 
-            console.log(`✨ Generating AI content for: ${ notice.title } `);
+            console.log(`✨ Generating AI content: ${notice.title}`);
 
-            // Generate HTML using Gemini
             const htmlContent = await generateNoticePost({
                 ...notice,
                 content: notice.title,
             });
 
-            // Save to MongoDB
             await Notification.create({
                 title: notice.title,
                 author: notice.author,
@@ -63,26 +74,44 @@ async function main() {
                 author: notice.author,
                 date: notice.date,
                 url: notice.url,
-                htmlContent : htmlContent
+                htmlContent,
             });
 
-            console.log(`✅ Stored: ${ notice.title } `);
+            console.log(`✅ Stored: ${notice.title}`);
         }
 
-        if (newNotices.length === 0) {
-            console.log("No new notices found.");
-            return;
+        if (newNotices.length > 0) {
+            console.log(
+                `📧 Sending ${newNotices.length} new notices...`
+            );
+
+            await sendNoticeEmail(newNotices);
         }
 
-        console.log(`📧 Sending ${ newNotices.length } new notices...`);
+        console.log("✅ Notice Sync Completed.");
 
-        await sendNoticeEmail(newNotices);
-
-        console.log("✅ Workflow completed successfully.");
+        return {
+            success: true,
+            inserted: newNotices.length,
+            notices: newNotices,
+        };
     } catch (error) {
-        console.error("❌ Error:", error);
-        process.exit(1);
+        console.error("❌ Notice Sync Failed:", error);
+        throw error;
     }
 }
 
-main();
+/**
+ * =====================================================
+ * Run directly from terminal
+ * =====================================================
+ */
+const isDirectRun =
+    process.argv[1] &&
+    process.argv[1].includes("notice.job");
+
+if (isDirectRun) {
+    runNoticeJob()
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
+}
