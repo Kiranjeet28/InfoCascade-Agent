@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "agent.ts",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc",
-    "agent": "tsx main.ts",
-    "scrape": "tsx main.ts"
-  },
+"scripts": {
+  "dev": "tsx watch src/server.ts",
+  "start": "node dist/server.js",
+  "build": "tsc",
+  "notice:sync": "tsx src/jobs/notice.job.ts"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
