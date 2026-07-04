@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { connectDB } from "../config/db.js";
 import { getLatestFive } from "../services/agent/agent.service.js";
-import { sendNoticeEmail } from "../services/mail.service.js";
 import { Notification } from "../models/Notice.js";
 import { generateNoticePost } from "../services/agent/gemini.service.js";
 
@@ -84,15 +83,7 @@ export async function runNoticeJob() {
             });
 
             console.log(`✅ Saved: ${notice.title}`);
-        }
-
-        if (newNotices.length > 0) {
-            console.log(
-                `📧 Sending ${newNotices.length} Email Notifications...`
-            );
-
-            await sendNoticeEmail(newNotices);
-        }
+        } 
 
         console.log("🎉 Notice Sync Completed.");
 
