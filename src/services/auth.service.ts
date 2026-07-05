@@ -49,7 +49,6 @@ class AuthService {
         const token = jwt.sign(
             {
                 id: user.id,
-                role: user.role,
             },
             env.JWT_SECRET,
             {

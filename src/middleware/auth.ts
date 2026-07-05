@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { env } from "../config/env.js";
 import User from "../models/User.js";
 
@@ -11,6 +11,10 @@ declare global {
     }
 }
 
+interface TokenPayload extends JwtPayload {
+    id: string;
+}
+
 export const auth = async (
     req: Request,
     res: Response,
@@ -19,37 +23,38 @@ export const auth = async (
     try {
         const authHeader = req.headers.authorization;
 
-        if (!authHeader) {
+        if (!authHeader?.startsWith("Bearer ")) {
             res.status(401).json({
                 success: false,
-                message: "Unauthorized",
+                message: "Authentication required.",
             });
             return;
         }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            res.status(401).json({
-                success: false,
-                message: "Invalid authorization header.",
-            });
-            return;
-        }
+        const token = authHeader.substring(7);
 
-        const token = authHeader.split(" ")[1];
-
-        const payload = jwt.verify(
+        const decoded = jwt.verify(
             token,
             env.JWT_SECRET
-        ) as {
-            id: string;
-        };
+        ) as TokenPayload;
 
-        const user = await User.findById(payload.id);
+        if (!decoded?.id) {
+            res.status(401).json({
+                success: false,
+                message: "Invalid token.",
+            });
+            return;
+        }
+
+        // Always fetch the latest user from the database
+        const user = await User.findById(decoded.id)
+            .select("-password")
+            .lean();
 
         if (!user) {
             res.status(401).json({
                 success: false,
-                message: "User not found.",
+                message: "User no longer exists.",
             });
             return;
         }
@@ -57,7 +62,9 @@ export const auth = async (
         req.user = user;
 
         next();
-    } catch {
+    } catch (error) {
+        console.error("Auth Middleware:", error);
+
         res.status(401).json({
             success: false,
             message: "Invalid or expired token.",
