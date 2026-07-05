@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 import User from "../models/User.js";
 import { env } from "../config/env.js";
+import { AppError } from "../utils/AppError.js";
 
 export interface RegisterDto {
     name: string;
@@ -24,12 +25,21 @@ class AuthService {
      * =====================================================
      */
     async register(data: RegisterDto) {
+        const normalizedEmail = data.email.toLowerCase();
+
+        if (!normalizedEmail.endsWith("@gmail.com")) {
+            throw new AppError(
+                "Only Gmail addresses are allowed",
+                400
+            );
+        }
+
         const emailExists = await User.findOne({
-            email: data.email.toLowerCase(),
+            email: normalizedEmail,
         });
 
         if (emailExists) {
-            throw new Error("Email already exists");
+            throw new AppError("Email already exists", 409);
         }
 
         const hashedPassword = await bcrypt.hash(
@@ -39,7 +49,7 @@ class AuthService {
 
         const user = await User.create({
             name: data.name,
-            email: data.email.toLowerCase(),
+            email: normalizedEmail,
             password: hashedPassword,
             branch: data.branch ?? "",
             batch: data.batch ?? "",

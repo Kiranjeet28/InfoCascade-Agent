@@ -19,6 +19,13 @@ export const registerValidator = [
         .withMessage("Email is required")
         .isEmail()
         .withMessage("Invalid email address")
+        .custom((value) => {
+            if (!value.toLowerCase().endsWith("@gmail.com")) {
+                throw new Error("Only Gmail addresses are allowed");
+            }
+
+            return true;
+        })
         .normalizeEmail(),
 
     body("password")

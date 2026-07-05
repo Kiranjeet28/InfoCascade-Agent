@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { User } from "../models/User.js";
 import { escapeRegExp } from "../utils/escapeRegExp.js";
+import { AppError } from "../utils/AppError.js";
 
 export interface UserQuery {
     page?: number;
@@ -126,12 +127,21 @@ class UserService {
      * ===========================================
      */
     async create(data: CreateUserDto) {
+        const normalizedEmail = data.email.toLowerCase();
+
+        if (!normalizedEmail.endsWith("@gmail.com")) {
+            throw new AppError(
+                "Only Gmail addresses are allowed",
+                400
+            );
+        }
+
         const emailExists = await User.findOne({
-            email: data.email.toLowerCase(),
+            email: normalizedEmail,
         });
 
         if (emailExists) {
-            throw new Error("Email already exists");
+            throw new AppError("Email already exists", 409);
         }
 
         const hashedPassword = await bcrypt.hash(
@@ -141,7 +151,7 @@ class UserService {
 
         const user = await User.create({
             name: data.name,
-            email: data.email.toLowerCase(),
+            email: normalizedEmail,
             password: hashedPassword,
             branch: data.branch ?? "",
             batch: data.batch ?? "",
@@ -163,6 +173,13 @@ class UserService {
         if (data.email) {
             data.email = data.email.toLowerCase();
 
+            if (!data.email.endsWith("@gmail.com")) {
+                throw new AppError(
+                    "Only Gmail addresses are allowed",
+                    400
+                );
+            }
+
             const emailExists = await User.findOne({
                 email: data.email,
                 _id: {
@@ -171,8 +188,9 @@ class UserService {
             });
 
             if (emailExists) {
-                throw new Error(
-                    "Email already exists"
+                throw new AppError(
+                    "Email already exists",
+                    409
                 );
             }
         }
