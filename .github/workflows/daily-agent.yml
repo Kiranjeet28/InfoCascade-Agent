@@ -2,8 +2,8 @@ name: InfoCascade Notice Sync
 
 on:
   schedule:
-    # Every day at 4:00 PM IST (10:30 UTC)
-    - cron: "30 10 * * *"
+    # Every 6 hours
+    - cron: "0 */6 * * *"
 
   workflow_dispatch:
 
