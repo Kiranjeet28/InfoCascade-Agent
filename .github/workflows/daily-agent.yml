@@ -21,7 +21,7 @@ jobs:
           node-version: 22
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Run Notice Agent
         run: npm run agent
