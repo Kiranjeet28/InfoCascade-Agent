@@ -13,6 +13,7 @@ import {
 import { auth } from "../middleware/auth.js";
 import { admin } from "../middleware/admin.js";
 import { validate } from "../middleware/validate.js";
+import { adminMutationRateLimit } from "../middleware/rateLimit.js";
 
 import {
     createTeamValidator,
@@ -67,6 +68,7 @@ router.post(
     "/",
     auth,
     admin,
+    adminMutationRateLimit,
     createTeamValidator,
     validate,
     createTeamMember
@@ -77,6 +79,7 @@ router.put(
     "/:id",
     auth,
     admin,
+    adminMutationRateLimit,
     updateTeamValidator,
     validate,
     updateTeamMember
@@ -87,6 +90,7 @@ router.delete(
     "/:id",
     auth,
     admin,
+    adminMutationRateLimit,
     teamIdValidator,
     validate,
     deleteTeamMember

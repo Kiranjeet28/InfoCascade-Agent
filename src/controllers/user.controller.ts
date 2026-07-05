@@ -196,9 +196,17 @@ export const updateProfile = asyncHandler(
             ""
         );
 
+        const profileData = {
+            name: req.body.name,
+            email: req.body.email,
+            branch: req.body.branch,
+            batch: req.body.batch,
+            password: req.body.password,
+        };
+
         const user = await UserService.update(
             id,
-            req.body
+            profileData
         );
 
         res.status(200).json({

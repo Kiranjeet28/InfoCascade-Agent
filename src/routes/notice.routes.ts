@@ -14,6 +14,7 @@ import {
 import { auth } from "../middleware/auth.js";
 import { admin } from "../middleware/admin.js";
 import { validate } from "../middleware/validate.js";
+import { adminMutationRateLimit } from "../middleware/rateLimit.js";
 
 import {
     createNoticeValidator,
@@ -51,6 +52,7 @@ router.post(
     "/",
     auth,
     admin,
+    adminMutationRateLimit,
     createNoticeValidator,
     validate,
     createNotice
@@ -61,6 +63,7 @@ router.put(
     "/:id",
     auth,
     admin,
+    adminMutationRateLimit,
     updateNoticeValidator,
     validate,
     updateNotice
@@ -71,6 +74,7 @@ router.delete(
     "/:id",
     auth,
     admin,
+    adminMutationRateLimit,
     deleteNotice
 );
 
@@ -80,6 +84,7 @@ router.post(
     "/sync",
     auth,
     admin,
+    adminMutationRateLimit,
     syncNotices
 );
 

@@ -1,4 +1,5 @@
 import { Team } from "../models/Team.js";
+import { escapeRegExp } from "../utils/escapeRegExp.js";
 
 export interface TeamQuery {
     page?: number;
@@ -67,28 +68,30 @@ class TeamService {
         }
 
         if (search.trim()) {
+            const escapedSearch = escapeRegExp(search.trim());
+
             filter.$or = [
                 {
                     name: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     department: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     role: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     batch: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
@@ -186,11 +189,13 @@ class TeamService {
      * =====================================
      */
     async latest(limit: number = 5) {
+        const cappedLimit = Math.min(Math.max(limit, 1), 50);
+
         return Team.find()
             .sort({
                 createdAt: -1,
             })
-            .limit(limit);
+            .limit(cappedLimit);
     }
 }
 

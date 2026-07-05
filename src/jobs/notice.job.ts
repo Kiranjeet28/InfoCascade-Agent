@@ -4,6 +4,7 @@ import { connectDB } from "../config/db.js";
 import { getLatestFive } from "../services/agent/agent.service.js";
 import { Notification } from "../models/Notice.js";
 import { generateNoticePost } from "../services/agent/gemini.service.js";
+import { sanitizeNoticeHtml } from "../utils/sanitizeHtml.js";
 
 dotenv.config();
 
@@ -64,6 +65,8 @@ export async function runNoticeJob() {
                 content: notice.title,
             });
 
+            const safeHtmlContent = sanitizeNoticeHtml(htmlContent);
+
             console.log(`💾 Saving Notice...`);
 
             await Notification.create({
@@ -71,7 +74,7 @@ export async function runNoticeJob() {
                 author: notice.author,
                 date: notice.date,
                 url: notice.url,
-                htmlContent,
+                htmlContent: safeHtmlContent,
             });
 
             newNotices.push({
@@ -79,11 +82,11 @@ export async function runNoticeJob() {
                 author: notice.author,
                 date: notice.date,
                 url: notice.url,
-                htmlContent,
+                htmlContent: safeHtmlContent,
             });
 
             console.log(`✅ Saved: ${notice.title}`);
-        } 
+        }
 
         console.log("🎉 Notice Sync Completed.");
 

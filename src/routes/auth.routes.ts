@@ -10,6 +10,10 @@ import {
 
 import { auth } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
+import {
+    authRateLimit,
+    passwordChangeRateLimit,
+} from "../middleware/rateLimit.js";
 
 import {
     registerValidator,
@@ -31,6 +35,7 @@ const router = Router();
  */
 router.post(
     "/register",
+    authRateLimit,
     registerValidator,
     validate,
     register
@@ -42,6 +47,7 @@ router.post(
  */
 router.post(
     "/login",
+    authRateLimit,
     loginValidator,
     validate,
     login
@@ -80,6 +86,7 @@ router.get(
 router.put(
     "/change-password",
     auth,
+    passwordChangeRateLimit,
     changePasswordValidator,
     validate,
     changePassword

@@ -12,6 +12,7 @@ import {
 import { auth } from "../middleware/auth.js";
 import { admin } from "../middleware/admin.js";
 import { validate } from "../middleware/validate.js";
+import { publicSubmissionRateLimit } from "../middleware/rateLimit.js";
 
 import {
     createHiringValidator,
@@ -29,6 +30,7 @@ const router = Router();
 // Submit recruitment form
 router.post(
     "/",
+    publicSubmissionRateLimit,
     createHiringValidator,
     validate,
     createHiring

@@ -14,6 +14,7 @@ import {
 import { auth } from "../middleware/auth.js";
 import { admin } from "../middleware/admin.js";
 import { validate } from "../middleware/validate.js";
+import { publicSubmissionRateLimit } from "../middleware/rateLimit.js";
 
 import {
     createFeedbackValidator,
@@ -31,6 +32,7 @@ const router = Router();
 // Submit feedback
 router.post(
     "/",
+    publicSubmissionRateLimit,
     createFeedbackValidator,
     validate,
     createFeedback

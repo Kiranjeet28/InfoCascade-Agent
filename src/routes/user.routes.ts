@@ -17,10 +17,12 @@ import {
 import { auth } from "../middleware/auth.js";
 import { admin } from "../middleware/admin.js";
 import { validate } from "../middleware/validate.js";
+import { adminMutationRateLimit } from "../middleware/rateLimit.js";
 
 import {
     createUserValidator,
     updateUserValidator,
+    updateProfileValidator,
 } from "../validators/user.validator.js";
 
 const router = Router();
@@ -38,7 +40,7 @@ router.get("/profile", auth, getProfile);
 router.put(
     "/profile",
     auth,
-    updateUserValidator,
+    updateProfileValidator,
     validate,
     updateProfile
 );
@@ -69,6 +71,7 @@ router.post(
     "/",
     auth,
     admin,
+    adminMutationRateLimit,
     createUserValidator,
     validate,
     createUser
@@ -79,6 +82,7 @@ router.put(
     "/:id",
     auth,
     admin,
+    adminMutationRateLimit,
     updateUserValidator,
     validate,
     updateUser
@@ -89,12 +93,14 @@ router.delete(
     "/:id",
     auth,
     admin,
+    adminMutationRateLimit,
     deleteUser
 );
 router.patch(
     "/:id/role",
     auth,
     admin,
+    adminMutationRateLimit,
     updateUserRole
 );
 export default router;

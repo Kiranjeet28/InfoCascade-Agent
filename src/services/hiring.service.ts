@@ -1,4 +1,5 @@
 import Hiring from "../models/Hiring.js";
+import { escapeRegExp } from "../utils/escapeRegExp.js";
 
 export interface HiringQuery {
     page?: number;
@@ -47,34 +48,36 @@ class HiringService {
         const filter: any = {};
 
         if (search.trim()) {
+            const escapedSearch = escapeRegExp(search.trim());
+
             filter.$or = [
                 {
                     fullName: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     email: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     department: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     batch: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     urn: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
@@ -147,11 +150,13 @@ class HiringService {
      * =====================================
      */
     async latest(limit: number = 5) {
+        const cappedLimit = Math.min(Math.max(limit, 1), 50);
+
         return Hiring.find()
             .sort({
                 createdAt: -1,
             })
-            .limit(limit);
+            .limit(cappedLimit);
     }
 }
 

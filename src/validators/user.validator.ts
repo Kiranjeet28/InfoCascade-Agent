@@ -74,3 +74,31 @@ export const updateUserValidator = [
         .isIn(["student", "admin"])
         .withMessage("Role must be either student or admin"),
 ];
+
+export const updateProfileValidator = [
+    body("name")
+        .optional()
+        .trim()
+        .isLength({ min: 3, max: 100 })
+        .withMessage("Name must be between 3 and 100 characters"),
+
+    body("email")
+        .optional()
+        .trim()
+        .isEmail()
+        .withMessage("Invalid email address")
+        .normalizeEmail(),
+
+    body("password")
+        .optional()
+        .isLength({ min: 8 })
+        .withMessage("Password must contain at least 8 characters"),
+
+    body("branch")
+        .optional()
+        .trim(),
+
+    body("batch")
+        .optional()
+        .trim(),
+];

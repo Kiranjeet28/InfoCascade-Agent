@@ -13,6 +13,7 @@ declare global {
 
 interface TokenPayload extends JwtPayload {
     id: string;
+    tokenVersion?: number;
 }
 
 export const auth = async (
@@ -55,6 +56,14 @@ export const auth = async (
             res.status(401).json({
                 success: false,
                 message: "User no longer exists.",
+            });
+            return;
+        }
+
+        if ((decoded.tokenVersion ?? -1) !== (user.tokenVersion ?? 0)) {
+            res.status(401).json({
+                success: false,
+                message: "Invalid or expired token.",
             });
             return;
         }

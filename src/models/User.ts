@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema(
             default: "student",
         },
 
+        tokenVersion: {
+            type: Number,
+            default: 0,
+        },
+
         subscribedAt: {
             type: Date,
             default: Date.now,

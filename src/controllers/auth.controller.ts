@@ -92,8 +92,14 @@ export const changePassword = asyncHandler(
  * =====================================================
  */
 export const logout = asyncHandler(
-    async (_req: Request, res: Response) => {
-        const result = await AuthService.logout();
+    async (req: Request, res: Response) => {
+        const id = String(
+            req.user?.id ??
+            req.user?._id ??
+            ""
+        );
+
+        const result = await AuthService.logout(id);
 
         res.status(200).json(result);
     }

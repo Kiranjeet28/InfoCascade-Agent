@@ -49,6 +49,7 @@ class AuthService {
         const token = jwt.sign(
             {
                 id: user.id,
+                tokenVersion: user.tokenVersion ?? 0,
             },
             env.JWT_SECRET,
             {
@@ -88,7 +89,7 @@ class AuthService {
         const token = jwt.sign(
             {
                 id: user.id,
-                role: user.role,
+                tokenVersion: user.tokenVersion ?? 0,
             },
             env.JWT_SECRET,
             {
@@ -144,12 +145,26 @@ class AuthService {
             throw new Error("Old password is incorrect");
         }
 
-        user.password = await bcrypt.hash(
+        const hashedPassword = await bcrypt.hash(
             newPassword,
             10
         );
 
-        await user.save();
+        await User.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    password: hashedPassword,
+                },
+                $inc: {
+                    tokenVersion: 1,
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
 
         return {
             success: true,
@@ -162,7 +177,22 @@ class AuthService {
      * Logout
      * =====================================================
      */
-    async logout() {
+    async logout(id: string) {
+        if (id) {
+            await User.findByIdAndUpdate(
+                id,
+                {
+                    $inc: {
+                        tokenVersion: 1,
+                    },
+                },
+                {
+                    new: true,
+                    runValidators: true,
+                }
+            );
+        }
+
         return {
             success: true,
             message: "Logged out successfully",

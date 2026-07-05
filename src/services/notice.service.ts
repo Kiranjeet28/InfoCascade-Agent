@@ -1,4 +1,6 @@
 import { Notification } from "../models/Notice.js";
+import { escapeRegExp } from "../utils/escapeRegExp.js";
+import { sanitizeNoticeHtml } from "../utils/sanitizeHtml.js";
 
 export interface NoticeQuery {
     page?: number;
@@ -38,16 +40,18 @@ class NoticeService {
         const filter: any = {};
 
         if (search.trim()) {
+            const escapedSearch = escapeRegExp(search.trim());
+
             filter.$or = [
                 {
                     title: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     author: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
@@ -92,6 +96,8 @@ class NoticeService {
      * Create notice
      */
     async create(data: CreateNoticeDto) {
+        const safeHtmlContent = sanitizeNoticeHtml(data.htmlContent);
+
         const exists = await Notification.findOne({
             url: data.url,
         });
@@ -100,16 +106,27 @@ class NoticeService {
             throw new Error("Notice already exists");
         }
 
-        return await Notification.create(data);
+        return await Notification.create({
+            ...data,
+            htmlContent: safeHtmlContent,
+        });
     }
 
     /**
      * Update notice
      */
     async update(id: string, data: UpdateNoticeDto) {
+        const safeHtmlContent =
+            typeof data.htmlContent === "string"
+                ? sanitizeNoticeHtml(data.htmlContent)
+                : data.htmlContent;
+
         const notice = await Notification.findByIdAndUpdate(
             id,
-            data,
+            {
+                ...data,
+                htmlContent: safeHtmlContent,
+            },
             {
                 new: true,
                 runValidators: true,
@@ -143,9 +160,11 @@ class NoticeService {
      * Get latest notices
      */
     async latest(limit = 5) {
+        const cappedLimit = Math.min(Math.max(limit, 1), 50);
+
         return Notification.find()
             .sort({ createdAt: -1 })
-            .limit(limit);
+            .limit(cappedLimit);
     }
 
     /**

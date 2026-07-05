@@ -1,4 +1,5 @@
 import { Feedback } from "../models/Feedback.js";
+import { escapeRegExp } from "../utils/escapeRegExp.js";
 
 export interface FeedbackQuery {
     page?: number;
@@ -53,22 +54,24 @@ class FeedbackService {
         }
 
         if (search.trim()) {
+            const escapedSearch = escapeRegExp(search.trim());
+
             filter.$or = [
                 {
                     name: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     email: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     message: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
@@ -165,11 +168,13 @@ class FeedbackService {
      * =====================================
      */
     async latest(limit: number = 5) {
+        const cappedLimit = Math.min(Math.max(limit, 1), 50);
+
         return Feedback.find()
             .sort({
                 createdAt: -1,
             })
-            .limit(limit);
+            .limit(cappedLimit);
     }
 
     /**

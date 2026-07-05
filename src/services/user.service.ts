@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { User } from "../models/User.js";
+import { escapeRegExp } from "../utils/escapeRegExp.js";
 
 export interface UserQuery {
     page?: number;
@@ -47,28 +48,30 @@ class UserService {
         }
 
         if (search.trim()) {
+            const escapedSearch = escapeRegExp(search.trim());
+
             filter.$or = [
                 {
                     name: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     email: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     branch: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
                 {
                     batch: {
-                        $regex: search,
+                        $regex: escapedSearch,
                         $options: "i",
                     },
                 },
