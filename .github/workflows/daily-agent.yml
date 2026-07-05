@@ -2,8 +2,13 @@ name: InfoCascade Notice Sync
 
 on:
   schedule:
+<<<<<<< HEAD
     # Runs every 6 hours
     - cron: "0 */6 * * *"
+=======
+    # Every day at 4:00 PM IST (10:30 UTC)
+    - cron: "30 10 * * *"
+>>>>>>> parent of f15709a (update gitAction)
 
   workflow_dispatch:
 
@@ -12,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+<<<<<<< HEAD
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -30,3 +36,12 @@ jobs:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+=======
+      - name: Trigger Notice Sync API
+
+        run: |
+          curl -X POST \
+          "${{ secrets.API_URL }}/api/notices/sync" \
+          -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}" \
+          -H "Content-Type: application/json"
+>>>>>>> parent of f15709a (update gitAction)
