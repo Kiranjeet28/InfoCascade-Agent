@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_API_KEY!,
+    apiKey: process.env.GOOGLE_API_KEY ?? "",
 });
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
 
 export interface Notice {
     title: string;
@@ -13,6 +15,36 @@ export interface Notice {
     date: string;
     url: string;
     content: string;
+}
+
+function escapeHtml(value: string): string {
+    return value.replace(
+        /[&<>"']/g,
+        (character) =>
+            ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+            })[character] ?? character
+    );
+}
+
+export function createDirectNoticePost(notice: Notice): string {
+    const lines = [
+        `<strong>${escapeHtml(notice.title)}</strong>`,
+        notice.content && notice.content !== notice.title
+            ? escapeHtml(notice.content)
+            : "",
+        notice.author
+            ? `Posted by <strong>${escapeHtml(notice.author)}</strong>.`
+            : "",
+        notice.date ? `Date: <strong>${escapeHtml(notice.date)}</strong>.` : "",
+        `<em>Read the complete notice: ${escapeHtml(notice.url)}</em>`,
+    ].filter(Boolean);
+
+    return `<p>${lines.join("<br>")}</p>`;
 }
 
 export async function generateNoticePost(
@@ -68,16 +100,25 @@ ${notice.content}
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.8-flash",
+            model: GEMINI_MODEL,
             contents: prompt,
         });
 
-        return (response.text ?? "")
+        const generatedContent = (response.text ?? "")
             .replace(/```html/g, "")
             .replace(/```/g, "")
             .trim();
+
+        if (!generatedContent) {
+            throw new Error("Gemini returned empty content");
+        }
+
+        return generatedContent;
     } catch (error) {
-        console.error("❌ Gemini Generation Error:", error);
-        throw error;
+        console.error(
+            "⚠️ Gemini generation failed; publishing direct notice content instead:",
+            error
+        );
+        return createDirectNoticePost(notice);
     }
 }

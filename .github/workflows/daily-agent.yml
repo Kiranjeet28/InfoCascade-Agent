@@ -23,10 +23,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci --include=dev
 
+      - name: Build Application
+        run: npm run build
+
       - name: Run Notice Agent
         run: npm run agent
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.8-flash' }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
